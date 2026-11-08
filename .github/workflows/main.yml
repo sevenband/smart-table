@@ -23,4 +23,6 @@ jobs:
     - name: Get testing lib
       run: set -eu && git clone --depth 1 $REP_TESTS $DIR_TESTS
     - name: Run tests
+      env:
+        PLAYWRIGHT_HOST_PLATFORM_OVERRIDE: ubuntu24.04-x64
       run: bash $DIR_TESTS/bin/run.sh
