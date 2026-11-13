@@ -1,8 +1,6 @@
 import "./fonts/ys-display/fonts.css";
 import "./style.css";
 
-import { data as sourceData } from "./data/dataset_1.js";
-
 import { initData } from "./data.js";
 import { processFormData } from "./lib/utils.js";
 
@@ -14,7 +12,7 @@ import { initFiltering } from "./components/filtering.js";
 import { initSearching } from "./components/searching.js";
 
 // Исходные данные используемые в render()
-const api = initData(sourceData);
+const api = initData();
 
 /**
  * Сбор и обработка полей из таблицы
@@ -23,9 +21,8 @@ const api = initData(sourceData);
 function collectState() {
     const state = processFormData(new FormData(sampleTable.container));
     // приведём количество страниц к числу
-    const rowsPerPage = parseInt(state.rowsPerPage);
-    // номер страницы по умолчанию 1 и тоже число
-    const page = parseInt(state.page ?? 1);
+    const rowsPerPage = parseInt(state.rowsPerPage, 10) || 10;
+    const page = parseInt(state.page, 10) || 1;
 
     return {
         ...state,
@@ -42,16 +39,17 @@ async function render(action) {
     let state = collectState(); // состояние полей из таблицы
     // здесь будут формироваться параметры запроса
     let query = {};
-    // @todo: использование
+    // Поиск и фильтрацию применяем до запроса, чтобы сервер вернул
+    // только записи, соответствующие выбранным параметрам.
     query = applySearching(query, state, action);
     query = applyFiltering(query, state, action);
     query = applySorting(query, state, action);
     query = applyPagination(query, state, action);
 
-    // запрашиваем данные с собранными параметрами
+    // Получаем записи с сервера по собранным параметрам запроса.
     const { total, items } = await api.getRecords(query);
 
-    // перерисовываем пагинатор
+    // Обновляем пагинатор по фактическому количеству записей на сервере.
     updatePagination(total, query);
 
     sampleTable.render(items);
@@ -86,7 +84,8 @@ const applySorting = initSorting([
     sampleTable.header.elements.sortByTotal,
 ]);
 
-// передаём элементы фильтра
+// Инициализируем фильтрацию: параметры фильтра будут добавляться к query,
+// а список продавцов заполним после получения справочников с сервера.
 const { applyFiltering, updateIndexes } = initFiltering(
     sampleTable.filter.elements,
 );
@@ -98,9 +97,11 @@ const appRoot = document.querySelector("#app");
 appRoot.appendChild(sampleTable.container);
 
 async function init() {
+    // Получаем справочники продавцов и покупателей с сервера.
     const indexes = await api.getIndexes();
+
+    // Передаём компоненту фильтрации список продавцов для заполнения select.
     updateIndexes(sampleTable.filter.elements, {
-        // для элемента с именем searchBySeller устанавливаем массив продавцов
         searchBySeller: indexes.sellers,
     });
 }

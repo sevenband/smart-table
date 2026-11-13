@@ -7,6 +7,7 @@ import { cloneTemplate } from "../lib/utils.js";
  * @param {(action: HTMLButtonElement | undefined) => void} onAction
  * @returns {{container: Node, elements: *, render: render}}
  */
+
 export function initTable(settings, onAction) {
     const { tableTemplate, rowTemplate, before, after } = settings;
     const root = cloneTemplate(tableTemplate);

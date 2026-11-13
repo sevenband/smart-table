@@ -37,7 +37,7 @@ export function initFiltering(elements) {
             const searchField = action.dataset.field;
             state[searchField] = "";
         }
-        // отфильтруем данные, используя компаратор
+        // Сформируем параметры фильтрации для серверного запроса.
         const filter = {};
         Object.keys(elements).forEach((key) => {
             if (elements[key]) {
